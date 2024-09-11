@@ -70,7 +70,10 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'my_blog.urls'
-
+INTERNAL_IPS = [
+    '127.0.0.1',
+    'localhost'
+]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
