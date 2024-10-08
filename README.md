@@ -24,6 +24,14 @@ jQuery：简化了 HTML 文档遍历、事件处理、动画和 Ajax 交互等�
 ![img_8.png](img_8.png "登录页面")
 
 ## 环境安装
-### python版本要求3.8以上
-### 构建虚拟环境
-### pip install -r requirements.txt
+### 第一种方式，Windows上
+#### 1.python版本要求3.8以上
+#### 2.构建虚拟环境
+#### 3.pip install -r requirements.txt
+
+### 第二种方式，linux系统（centos7）
+#### 1.先安装docker
+#### 2.来到项目根目录
+#### 3.输入docker build -t django_blog .
+#### 4.构建完镜像后，docker run -id --name=blog -d -v .:/soft -p 8080:8080 django_blog:latest
+#### 5.即可登录网站，如果ip有限制，可以在settings.py里添加你的Linux系统的ip
