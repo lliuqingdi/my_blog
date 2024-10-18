@@ -23,16 +23,20 @@ class CommentNoticeListView(LoginRequiredMixin, ListView):
 
 class CommentNoticeUpdateView(View):
     """更新通知状态"""
-    # 处理 get 请求
     def get(self, request):
         # 获取未读消息
         notice_id = request.GET.get('notice_id')
-        # 更新单条通知
-        if notice_id:
-            article = ArticlePost.objects.get(id=request.GET.get('article_id'))
-            request.user.notifications.get(id=notice_id).mark_as_read()
-            return redirect(article)
-        # 更新全部通知
+        article_id = request.GET.get('article_id')
+        # print(notice_id, article_id)
+        # 确保 notice_id 和 article_id 是有效的数字
+        if notice_id and notice_id.isdigit() and article_id and article_id.isdigit():
+            try:
+                article = ArticlePost.objects.get(id=article_id)
+                request.user.notifications.get(id=notice_id).mark_as_read()
+                return redirect(article)
+            except ArticlePost.DoesNotExist:
+                return redirect('notice:list')  # 文章不存在时重定向到通知列表
         else:
+            # 更新全部通知为已读
             request.user.notifications.mark_all_as_read()
             return redirect('notice:list')
