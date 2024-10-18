@@ -6,17 +6,17 @@
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
 </head>
 <body>
-    <form
-        action="."
-        method="POST"
-        id="reply_form"
-    >
-        {% csrf_token %}
-        {{ comment_form.as_p }} <!-- 确保表单字段被渲染 -->
-        <input type="submit" value="发送" class="btn btn-primary">
-    </form>
-    <script src="{% static 'jquery/jquery-3.3.1.js' %}"></script>
-    <script src="{% static 'popper/popper-1.14.4.js' %}"></script>
-    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<form action="
+        {% if parent_comment_id %}{% url 'comment:comment_reply' article_id=article_id parent_comment_id=parent_comment_id %}{% else %}{% url 'comment:post_comment' article_id=article_id %}{% endif %}"
+      method="POST" id="reply_form">
+    {% csrf_token %}
+    {{ comment_form.as_p }}
+    <input type="hidden" name="parent_comment_id" value="{{ parent_comment_id }}">
+    <input type="submit" value="发送" class="btn btn-primary">
+</form>
+
+<script src="{% static 'jquery/jquery-3.3.1.js' %}"></script>
+<script src="{% static 'popper/popper-1.14.4.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 </body>
 </html>
