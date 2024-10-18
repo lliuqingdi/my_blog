@@ -12,9 +12,10 @@ class CommentForm(forms.ModelForm):
 
     class Meta:
         model = Comment
-        fields = ["body"]
+        fields = ["body", "parent"]
         widgets = {
             "body": CKEditor5Widget(
                 attrs={"class": "django_ckeditor_5"}, config_name="comment"
-            )
+            ),
+            "parent": forms.HiddenInput()
         }
