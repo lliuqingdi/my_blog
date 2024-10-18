@@ -25,7 +25,7 @@ jQuery：简化了 HTML 文档遍历、事件处理、动画和 Ajax 交互等�
 
 ## 环境安装
 ### 第一种方式，Windows上
-#### 1.python版本要求3.8以上
+#### 1.python版本要求3.9以上
 #### 2.构建虚拟环境
 #### 3.pip install -r requirements.txt
 
