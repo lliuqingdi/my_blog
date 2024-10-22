@@ -326,6 +326,23 @@ class ArticleDetailView(DetailView):
         obj.save(update_fields=['total_views'])
         return obj
 
+    def get_context_data(self, **kwargs):
+        """
+        向上下文中添加额外数据
+        """
+        # 首先获取默认上下文数据
+        context = super(ArticleDetailView, self).get_context_data(**kwargs)
+
+        # 添加文章的评论
+        comments = Comment.objects.filter(article=self.object)
+        context['comments'] = comments
+
+        # 添加评论表单
+        comment_form = CommentForm()
+        context['comment_form'] = comment_form
+
+        return context
+
 
 class ArticleCreateView(CreateView):
     """
