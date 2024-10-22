@@ -231,69 +231,20 @@
     <script>
         // 点赞功能主函数
         function validate_is_like(url, id, likes) {
-            // 取出 LocalStorage 中的数据
-            let storage = window.localStorage;
-            const storage_str_data = storage.getItem("my_blog_data");
-            let storage_json_data = JSON.parse(storage_str_data);
-            // 若数据不存在，则创建空字典
-            if (!storage_json_data) {
-                storage_json_data = {}
-            }
-            ;
-            // 检查当前文章是否已点赞。是则 status = true
-            const status = check_status(storage_json_data, id);
-            if (status) {
-                layer.msg('已经点过赞了哟~');
-                return;
-            } else {
-                $('span#likes_number').text(likes + 1).css('color', '#dc3545');
-            }
             // 用 ajax 向后端发送 post 请求
-            $.post(
-                url,
-                {},
-                function (result) {
-                    if (result === 'success') {
-                        try {
-                            storage_json_data[id] = true;
-                        } catch (e) {
-                            window.localStorage.clear();
-                        }
-                        ;
-
-                        const d = JSON.stringify(storage_json_data);
-                        try {
-                            storage.setItem("my_blog_data", d);
-                        } catch (e) {
-                            if (e.code === 22) {
-                                window.localStorage.clear();
-                                storage.setItem("my_blog_data", d);
-                            }
-                        }
-                        ;
-                    } else {
-                        layer.msg("与服务器通信失败..过一会儿再试试呗~");
-                    }
-
-                }
-            );
-        };
-
-        // 辅助点赞主函数，验证点赞状态
-        function check_status(data, id) {
-            try {
-                if (id in data && data[id]) {
-                    return true;
+            $.post(url, {}, function (result) {
+                if (result === 'success') {
+                    // 如果点赞成功，更新点赞数
+                    $('span#likes_number').text(likes + 1).css('color', '#dc3545');
                 } else {
-                    return false;
+                    layer.msg("已经点过赞了哟~");  // 处理已点赞的情况
                 }
-            } catch (e) {
-                window.localStorage.clear();
-                return false;
-            }
-            ;
-        };
+            }).fail(function () {
+                layer.msg("与服务器通信失败..过一会儿再试试呗~");
+            });
+        }
     </script>
+
 
     <!-- 粘性侧边栏 -->
     <script src="{% static 'sticky_sidebar/jquery.sticky-sidebar.min.js' %}"></script>
