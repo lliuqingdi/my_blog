@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from .models import ArticlePost, ArticleColumn
+from .models import ArticlePost, ArticleColumn, Like
 from .forms import ArticlePostForm
 import markdown
 from django.contrib.auth.decorators import login_required
@@ -253,9 +253,17 @@ def article_update(request, id):
 class IncreaseLikesView(View):
     def post(self, request, *args, **kwargs):
         article = ArticlePost.objects.get(id=kwargs.get('id'))
-        article.likes += 1
-        article.save()
-        return HttpResponse('success')
+        user = request.user  # 获取当前用户
+
+        # 检查用户是否已经点赞
+        if not Like.objects.filter(article=article, user=user).exists():
+            print(user)
+            article.likes += 1
+            article.save()
+            Like.objects.create(article=article, user=user)  # 记录用户的点赞
+            return HttpResponse('success')
+        else:
+            return HttpResponse('already liked', status=400)  # 已点赞的状态码
 
 
 def article_list_example(request):

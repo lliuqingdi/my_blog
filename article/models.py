@@ -75,3 +75,12 @@ class ArticlePost(models.Model):
             return True
         else:
             return False
+
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(ArticlePost, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'article')
