@@ -105,61 +105,40 @@
                     {% recursetree comments %}
                         {% with comment=node %}
                             <div class="{% if comment.reply_to %}
-                                    offset-1 col-11
-                                    {% else %}
-                                    col-12
-                                    {% endif %}"
+        offset-1 col-11  <!-- 父评论和子评论的缩进 -->
+        {% else %}
+        col-12  <!-- 无缩进的父评论 -->
+        {% endif %}"
                                  id="comment_elem_{{ comment.id }}"
                             >
                                 <hr>
                                 <p>
-                                    <strong style="color: pink">
-                                        {{ comment.user }}
-                                    </strong>
+                                    <strong style="color: pink">{{ comment.user }}</strong>
 
                                     <!-- 显示被回复人 -->
                                     {% if comment.reply_to %}
-                                        <i class="far fa-arrow-alt-circle-right"
-                                           style="color: cornflowerblue;"
-                                        ></i>
-                                        <strong style="color: pink">
-                                            {{ comment.reply_to }}
-                                        </strong>
+                                        <i class="far fa-arrow-alt-circle-right" style="color: cornflowerblue;"></i>
+                                        <strong style="color: pink">{{ comment.reply_to }}</strong>
                                     {% endif %}
-
                                 </p>
                                 <div>{{ comment.body|safe }}</div>
 
                                 <div>
-                                <span style="color: gray">
-                                    {{ comment.created|date:"Y-m-d H:i" }}
-                                </span>
+                                    <span style="color: gray">{{ comment.created|date:"Y-m-d H:i" }}</span>
 
                                     <!-- 加载 modal 的按钮 -->
                                     {% if user.is_authenticated %}
-                                        <button type="button"
-                                                class="btn btn-light btn-sm text-muted"
-                                                onclick="load_modal({{ article.id }}, {{ comment.id }})"
-                                        >
-                                            回复
+                                        <button type="button" class="btn btn-light btn-sm text-muted"
+                                                onclick="load_modal({{ article.id }}, {{ comment.id }})">回复
                                         </button>
                                     {% else %}
-                                        <a class="btn btn-light btn-sm text-muted"
-                                           href="{% url 'userprofile:login' %}"
-                                        >
-                                            回复
-                                        </a>
+                                        <a class="btn btn-light btn-sm text-muted" href="{% url 'userprofile:login' %}">回复</a>
                                     {% endif %}
                                 </div>
 
                                 <!-- Modal -->
-                                <div class="modal fade"
-                                     id="comment_{{ comment.id }}"
-                                     tabindex="-1"
-                                     role="dialog"
-                                     aria-labelledby="CommentModalCenter"
-                                     aria-hidden="true"
-                                >
+                                <div class="modal fade" id="comment_{{ comment.id }}" tabindex="-1" role="dialog"
+                                     aria-labelledby="CommentModalCenter" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
                                         <div class="modal-content" style="height: 480px">
                                             <div class="modal-header">
@@ -172,11 +151,13 @@
                                 </div>
 
                                 {% if not comment.is_leaf_node %}
-                                    <div class="children">
+                                    <!-- 子评论部分，保持一致的缩进 -->
+                                    <div class="children offset-1">
                                         {{ children }}
                                     </div>
                                 {% endif %}
                             </div>
+
 
                         {% endwith %}
                     {% endrecursetree %}
