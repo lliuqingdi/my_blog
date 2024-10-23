@@ -8,8 +8,8 @@
 
 {% block content %}
 <div class="container">
-    <div class="row">
-        <div class="col-12">
+    <div class="row justify-content-center" style="min-height: 100vh; align-items: center;">
+        <div class="col-12 col-md-6 col-lg-5">
             <br>
 
             {% get_providers as socialaccount_providers %}
@@ -31,10 +31,11 @@
             {% include "socialaccount/snippets/login_extra.html" %}
 
             {% else %}
-            <p>{% blocktrans %}If you have not created an account yet, then please
+            <p>{% blocktrans %}如果你没有账号，请先注册一个账号
             <a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}</p>
             {% endif %}
-            <div class="col-6">
+
+            <div>
                 <form class="login" id="login_form" method="POST" action="{% url 'account_login' %}">
                     {% csrf_token %}
                     <div class="form-group">
@@ -66,7 +67,7 @@
                             保持登录
                         </label>
                     </div>
-                    <button class="primaryAction btn btn-primary" type="submit" id="submit_login">确认</button>
+                    <button class="primaryAction btn btn-primary btn-block" type="submit" id="submit_login">确认</button>
                 </form>
             </div>
         </div>
