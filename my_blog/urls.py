@@ -21,30 +21,39 @@ from django.conf.urls.static import static
 import notifications.urls
 from article.views import article_list
 from django.contrib.auth import views as auth_views
-
-
+from .view import CustomPasswordResetConfirmView
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', article_list, name='home'),
-    path('article/', include('article.urls', namespace='article')),
-    path('userprofile/', include('userprofile.urls', namespace='userprofile')),
-    path('comment/', include('comment.urls', namespace='comment')),
-    path('inbox/notifications/', include(notifications.urls, namespace='notifications')),
-    path('notice/', include('notice.urls', namespace='notice')),
-    path('accounts/', include('allauth.urls')),
-    path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
-    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    path('ckeditor5/', include('django_ckeditor_5.urls')),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+                  path('admin/', admin.site.urls),
+                  path('', article_list, name='home'),
+                  path('article/', include('article.urls', namespace='article')),
+                  path('userprofile/', include('userprofile.urls', namespace='userprofile')),
+                  path('comment/', include('comment.urls', namespace='comment')),
+                  path('inbox/notifications/', include(notifications.urls, namespace='notifications')),
+                  path('notice/', include('notice.urls', namespace='notice')),
+                  path('accounts/', include('allauth.urls')),
+                  path('password-reset/',
+                       auth_views.PasswordResetView.as_view(template_name='password_reset/password_reset_form.html',
+                       email_template_name='password_reset/password_reset_email.html',
+                       subject_template_name='password_reset/password_reset_subject.txt',),
+                       name='password_reset'),
+                  path('password-reset/done/',
+                       auth_views.PasswordResetDoneView.as_view(
+                           template_name='password_reset/password_reset_done.html'),
+                       name='password_reset_done'),
+                  path('password-reset-confirm/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(),
+                       name='password_reset_confirm'),
+                  path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(
+                      template_name='password_reset/password_reset_complete.html'),
+                       name='password_reset_complete'),
+                  path('ckeditor5/', include('django_ckeditor_5.urls')),
+              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += [
     path('i18n/', include('django.conf.urls.i18n')),
 ]
 if settings.DEBUG:
     import debug_toolbar
-    urlpatterns = [
-        path('__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
 
+    urlpatterns = [
+                      path('__debug__/', include(debug_toolbar.urls)),
+                  ] + urlpatterns
