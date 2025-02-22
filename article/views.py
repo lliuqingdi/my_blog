@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.http import HttpResponse
 from .models import ArticlePost, ArticleColumn, Like
 from .forms import ArticlePostForm
@@ -12,12 +12,13 @@ from comment.forms import CommentForm
 from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
+from .redis_utils import add_search_history, get_search_history
 
 
 # 文章列表
 def article_list(request):
     # 从 url 中提取查询参数
-    search = request.GET.get('search')
+    search = request.GET.get('search', '')  # 默认为空字符串
     order = request.GET.get('order')
     column = request.GET.get('column')
     tag = request.GET.get('tag')
@@ -31,6 +32,12 @@ def article_list(request):
             Q(title__icontains=search) |
             Q(body__icontains=search)
         )
+        # 如果用户已登录，保存搜索记录
+        if not isinstance(request.user, AnonymousUser):
+            add_search_history(request.user.id, search)
+        else:
+            # 为未登录用户保存搜索记录
+            add_search_history('anonymous', search)
     else:
         # 将 search 参数重置为空
         search = ''
@@ -48,12 +55,17 @@ def article_list(request):
         # 按热度排序博文
         article_list = article_list.order_by('-total_views')
 
-    # 每页显示 1 篇文章
+    # 每页显示 3 篇文章
     paginator = Paginator(article_list, 3)
     # 获取 url 中的页码
     page = request.GET.get('page')
     # 将导航对象相应的页码内容返回给 articles
     articles = paginator.get_page(page)
+
+    # 获取历史搜索记录
+    user_id = request.user.id if request.user.is_authenticated else 'anonymous'
+    search_history = get_search_history(user_id)
+
     # 需要传递给模板（templates）的对象
     context = {
         'articles': articles,
@@ -61,6 +73,7 @@ def article_list(request):
         'search': search,
         'column': column,
         'tag': tag,
+        'search_history': search_history,  # 传递历史搜索记录
     }
     # render函数：载入模板，并返回context对象
     return render(request, 'article/list.html', context)
