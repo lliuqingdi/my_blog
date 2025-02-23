@@ -10,18 +10,19 @@ Bootstrap: 用于构建响应式和移动优先的 Web 项目。
 jQuery：简化了 HTML 文档遍历、事件处理、动画和 Ajax 交互等常见任务。
 
 ## 功能需求分析
-![img_1.png](img_1.png)
+![img_1.png](images/img_1.png)
 
 ## 功能流程图
-![img_2.png](img_2.png)
+![img_2.png](images/img_2.png)
 
 
 ## 页面展示
-![img_3.png](img_3.png "首页")
-![img_4.png](img_4.png "详情页")
-![img_5.png](img_5.png "回复通知")
-![img_7.png](img_7.png "添加文章")
-![img_8.png](img_8.png "登录页面")
+![image9.png](images/image9.png "首页")
+![img_4.png](images/img_4.png "详情页")
+![img_6.png](images/image10.png "个人发布的博客页面")
+![img_5.png](images/img_5.png "回复通知")
+![img_7.png](images/img_7.png "添加文章")
+![img_8.png](images/img_8.png "登录页面")
 
 ## 环境安装
 ### 第一种方式，Windows上
