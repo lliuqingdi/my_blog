@@ -19,7 +19,8 @@ urlpatterns = [
     path('article-update/<int:id>/', views.article_update, name='article_update'),
     # 点赞 +1
     path('increase-likes/<int:id>/', views.IncreaseLikesView.as_view(), name='increase_likes'),
-
+    # 自己发的博客
+    path('my-articles/', views.my_articles, name='my_articles'),
     # 列表类视图
     path('list-view/', views.ArticleListView.as_view(), name='list_view'),
     # 详情类视图

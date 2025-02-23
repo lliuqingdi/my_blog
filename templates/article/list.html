@@ -12,6 +12,7 @@
     <!-- 面包屑导航 -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
+            <!-- 最新/最热导航 -->
             <li class="breadcrumb-item">
                 <a href="{% url 'article:article_list' %}?search=&column={{ column }}&tag={{ tag }}">
                     最新
@@ -21,6 +22,22 @@
                 <a href="{% url 'article:article_list' %}?order=total_views&search=&column={{ column }}&tag={{ tag }}">
                     最热
                 </a>
+            </li>
+
+            <!-- 新增个人博客入口 -->
+            <li class="breadcrumb-item ml-auto">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'article:my_articles' %}" class="text-primary">
+                        <i class="fas fa-user-edit"></i> 个人博客
+                    </a>
+                {% else %}
+                    <a href="{% url 'userprofile:login' %}?next={% url 'article:my_articles' %}"
+                       class="text-muted"
+                       title="请先登录"
+                       data-toggle="tooltip">
+                        <i class="fas fa-user-lock"></i> 个人博客
+                    </a>
+                {% endif %}
             </li>
         </ol>
     </nav>
@@ -50,118 +67,137 @@
         </div>
     </div>
 
-    <!-- 搜索提示语 -->
-    {% if search %}
-        {% if articles %}
-            <h4><span style="color: red">"{{ search }}"</span>的搜索结果如下：</h4>
-            <hr>
+    <!-- 页面标题 -->
+    <h4 class="my-4">
+        {% if is_my_articles %}
+            <i class="fas fa-file-alt"></i> 我的文章列表
+        {% elif search %}
+            <span style="color: red">"{{ search }}"</span>的搜索结果
         {% else %}
-            <h4>暂无<span style="color: red">"{{ search }}"</span>有关的文章。</h4>
-            <hr>
+            <i class="fas fa-list-ul"></i> 所有文章列表
         {% endif %}
-    {% endif %}
+    </h4>
 
     <!-- 列表循环 -->
     <div class="row mt-2">
         {% for article in articles %}
-            <!-- 文章内容 -->
-            {% if article.avatar %}
-                <div class="col-3">
-                    <img src="{{ article.avatar.url }}"
-                         alt="avatar"
-                         style="max-width:100%; border-radius: 20px">
-                </div>
-            {% endif %}
-
-            <div class="col">
-                <!-- 栏目 -->
-                {% if article.column %}
-                    <a role="button"
-                       href="{% url 'article:article_list' %}?column={{ article.column.id }}"
-                       class="btn btn-sm mb-2
-                            {% if article.column.title == 'Django' %}
-                                btn-success
-                            {% elif article.column.title == 'Java' %}
-                                btn-danger
-                            {% elif article.column.title == 'HTML' %}
-                                btn-warning
-                            {% endif %}">
-                        {{ article.column }}
+            <div class="col-12 position-relative mb-4">
+                <!-- 编辑按钮 -->
+                {% if user == article.author or is_my_articles %}
+                <div class="position-absolute" style="right: 15px; top: 15px; z-index: 1;">
+                    <a href="{% url 'article:article_update' article.id %}"
+                       class="btn btn-sm btn-outline-primary"
+                       data-toggle="tooltip"
+                       title="编辑文章">
+                        <i class="fas fa-edit"></i>
                     </a>
+                </div>
                 {% endif %}
 
-                <!-- 标签 -->
-                <span>
-                    {% for tag in article.tags.all %}
-                        <a href="{% url 'article:article_list' %}?tag={{ tag }}"
-                           class="badge badge-secondary">
-                            {{ tag }}
-                        </a>
-                    {% endfor %}
-                </span>
+                <!-- 文章内容 -->
+                <div class="card shadow-sm">
+                    <div class="row no-gutters">
+                        {% if article.avatar %}
+                        <div class="col-md-3">
+                            <img src="{{ article.avatar.url }}"
+                                 class="card-img"
+                                 alt="avatar"
+                                 style="height: 200px; object-fit: cover;">
+                        </div>
+                        {% endif %}
 
-                <!-- 标题 -->
-                <h4>
-                    <b>
-                        <a href="{% url 'article:article_detail' article.id %}"
-                           style="color: black;">
-                            {{ article.title }}
-                        </a>
-                    </b>
-                </h4>
-                <!-- 摘要 -->
-                <div>
-                    <p style="color: gray;">
-                        {{ article.body|slice:'100' }}...
-                    </p>
+                        <div class="col-md-{% if article.avatar %}9{% else %}12{% endif %}">
+                            <div class="card-body">
+                                <!-- 栏目和标签 -->
+                                <div class="mb-2">
+                                    {% if article.column %}
+                                    <a href="{% url 'article:article_list' %}?column={{ article.column.id }}"
+                                       class="badge
+                                           {% if article.column.title == 'Django' %}badge-success
+                                           {% elif article.column.title == 'Java' %}badge-danger
+                                           {% elif article.column.title == 'HTML' %}badge-warning
+                                           {% else %}badge-primary{% endif %}">
+                                        {{ article.column }}
+                                    </a>
+                                    {% endif %}
+
+                                    {% for tag in article.tags.all %}
+                                    <a href="{% url 'article:article_list' %}?tag={{ tag }}"
+                                       class="badge badge-secondary">
+                                        {{ tag }}
+                                    </a>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- 标题 -->
+                                <h4 class="card-title">
+                                    <a href="{% url 'article:article_detail' article.id %}"
+                                       class="text-dark font-weight-bold">
+                                        {{ article.title }}
+                                    </a>
+                                </h4>
+
+                                <!-- 摘要 -->
+                                <p class="card-text text-muted">
+                                    {{ article.body|striptags|truncatechars:150 }}
+                                </p>
+
+                                <!-- 元信息 -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">
+                                        <span class="mr-3">
+                                            <i class="fas fa-eye text-info"></i>
+                                            {{ article.total_views }}
+                                        </span>
+                                        <span class="mr-3">
+                                            <i class="fas fa-comments text-success"></i>
+                                            {{ article.comments.count }}
+                                        </span>
+                                        <span>
+                                            <i class="fas fa-clock text-pink"></i>
+                                            {{ article.created|timesince_zh }}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">
+                                        作者：{{ article.author.username }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <!-- 注脚 -->
-                <p>
-                    <span>
-                        <i class="fas fa-eye" style="color: lightskyblue;"></i>
-                        {{ article.total_views }}&nbsp;&nbsp;&nbsp;
-                    </span>
-                    <span>
-                        <i class="fas fa-comments" style="color: yellowgreen;"></i>
-                        {{ article.comments.count }}&nbsp;&nbsp;&nbsp;
-                    </span>
-                    <span>
-                        <i class="fas fa-clock" style="color: pink;"></i>
-                        {{ article.created|timesince_zh }}
-                    </span>
-                </p>
             </div>
-            <hr style="width: 100%;">
         {% endfor %}
     </div>
 
     <!-- 页码导航 -->
-    <div class="pagination row">
+    <div class="pagination row mt-4">
         <div class="m-auto">
             <span class="step-links">
                 {% if articles.has_previous %}
-                    <a href="?page=1&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}" class="btn btn-success">
+                    <a href="?page=1&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
+                       class="btn btn-sm btn-success">
                         &laquo; 1
                     </a>
-                    <span>...</span>
+                    <span class="mx-2">...</span>
                     <a href="?page={{ articles.previous_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
-                       class="btn btn-secondary">
+                       class="btn btn-sm btn-secondary">
                         {{ articles.previous_page_number }}
                     </a>
                 {% endif %}
 
-                <span class="current btn btn-danger btn-lg">
+                <span class="current btn btn-sm btn-danger mx-2">
                     {{ articles.number }}
                 </span>
 
                 {% if articles.has_next %}
                     <a href="?page={{ articles.next_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
-                       class="btn btn-secondary">
+                       class="btn btn-sm btn-secondary">
                         {{ articles.next_page_number }}
                     </a>
-                    <span>...</span>
+                    <span class="mx-2">...</span>
                     <a href="?page={{ articles.paginator.num_pages }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
-                       class="btn btn-success">
+                       class="btn btn-sm btn-success">
                         {{ articles.paginator.num_pages }} &raquo;
                     </a>
                 {% endif %}
@@ -171,3 +207,25 @@
 </div>
 
 {% endblock content %}
+
+{% block extra_css %}
+<style>
+    /* 卡片悬停效果 */
+    .card:hover {
+        transform: translateY(-3px);
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    /* 编辑按钮动画 */
+    .btn-outline-primary:hover {
+        transform: scale(1.1);
+        transition: all 0.2s ease;
+    }
+
+    /* 作者标签样式 */
+    small.text-muted {
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}

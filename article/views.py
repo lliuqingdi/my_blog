@@ -366,3 +366,56 @@ class ArticleCreateView(CreateView):
     # 或者有选择的提交字段，比如：
     # fields = ['title']
     template_name = 'article/create_by_class_view.html'
+
+
+@login_required(login_url='/userprofile/login/')
+def my_articles(request):
+    # 获取当前用户的所有文章
+    article_list = ArticlePost.objects.filter(author=request.user)
+
+    # 从 url 中提取查询参数
+    search = request.GET.get('search', '')
+    order = request.GET.get('order')
+    column = request.GET.get('column')
+    tag = request.GET.get('tag')
+
+    # 搜索查询集
+    if search:
+        article_list = article_list.filter(
+            Q(title__icontains=search) |
+            Q(body__icontains=search)
+        )
+        # 保存搜索记录（根据需求决定是否保留）
+        add_search_history(request.user.id, search)
+
+    # 栏目查询
+    if column is not None and column.isdigit():
+        article_list = article_list.filter(column=column)
+
+    # 标签查询
+    if tag and tag != 'None':
+        article_list = article_list.filter(tags__name__in=[tag])
+
+    # 排序
+    if order == 'total_views':
+        article_list = article_list.order_by('-total_views')
+
+    # 分页
+    paginator = Paginator(article_list, 3)
+    page = request.GET.get('page')
+    articles = paginator.get_page(page)
+
+    # 获取搜索历史（可选）
+    search_history = get_search_history(request.user.id)
+
+    context = {
+        'articles': articles,
+        'order': order,
+        'search': search,
+        'column': column,
+        'tag': tag,
+        'search_history': search_history,
+        'is_my_articles': True  # 添加标识用于模板判断
+    }
+
+    return render(request, 'article/list.html', context)
