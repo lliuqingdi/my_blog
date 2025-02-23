@@ -103,6 +103,24 @@ DATABASES = {
     }
 }
 
+
+# Redis 配置
+REDIS_HOST = '192.168.209.101'  # Redis服务器地址
+REDIS_PORT = 6379               # Redis服务器端口
+REDIS_DB = 1                    # 使用的 Redis 数据库索引（比如使用数据库 1）
+
+# Django缓存配置
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}",  # 使用 REDIS_DB 变量
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
