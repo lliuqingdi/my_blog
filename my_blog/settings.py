@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -53,6 +54,8 @@ INSTALLED_APPS = [
     'drf_api_logger',
     'userprofile',
     "debug_toolbar",
+    'django_celery_results',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -317,5 +320,22 @@ LOGGING = {
             "level": "INFO",
             "propagate": True,
         },
+    },
+}
+
+CELERY_BROKER_URL = 'redis://192.168.209.101:6379/0'  # 使用 Redis 作为 Celery 的消息代理
+CELERY_RESULT_BACKEND = 'redis://192.168.209.101:6379/0'  # 使用 Redis 作为 Celery 的结果存储后端
+CELERY_ACCEPT_CONTENT = ['json']  # 设置 Celery 只接受 json 格式的消息
+CELERY_TASK_SERIALIZER = 'json'  # 使用 JSON 序列化任务
+CELERY_TIMEZONE = 'Asia/Shanghai'  # 设置时区为上海
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_WORKER_SEND_TASK_EVENTS = True
+CELERY_TASK_SEND_SENT_EVENT = True
+
+# 配置 Celery Beat 定时任务
+CELERY_BEAT_SCHEDULE = {
+    'update-expiry-every-week': {
+        'task': 'your_app.tasks.update_random_expiry_for_all_search_histories',
+        'schedule': crontab(minute=0, hour=0, day_of_week=0),  # 每周一次，周日 00:00 执行
     },
 }
