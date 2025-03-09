@@ -323,19 +323,14 @@ LOGGING = {
     },
 }
 
-CELERY_BROKER_URL = 'redis://192.168.209.101:6379/0'  # 使用 Redis 作为 Celery 的消息代理
-CELERY_RESULT_BACKEND = 'redis://192.168.209.101:6379/0'  # 使用 Redis 作为 Celery 的结果存储后端
-CELERY_ACCEPT_CONTENT = ['json']  # 设置 Celery 只接受 json 格式的消息
-CELERY_TASK_SERIALIZER = 'json'  # 使用 JSON 序列化任务
 CELERY_TIMEZONE = 'Asia/Shanghai'  # 设置时区为上海
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-CELERY_WORKER_SEND_TASK_EVENTS = True
-CELERY_TASK_SEND_SENT_EVENT = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
-# 配置 Celery Beat 定时任务
-CELERY_BEAT_SCHEDULE = {
-    'update-expiry-every-week': {
-        'task': 'your_app.tasks.update_random_expiry_for_all_search_histories',
-        'schedule': crontab(minute=0, hour=0, day_of_week=0),  # 每周一次，周日 00:00 执行
-    },
-}
+
+# pick which cache from the CACHES setting.
+CELERY_CACHE_BACKEND = 'default'
+
+
