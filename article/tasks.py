@@ -10,7 +10,6 @@ def clean_inactive_searches():
     redis_conn = get_redis_connection("default")
     deleted_count = 0
 
-    # 使用SCAN安全遍历
     cursor = '0'
     while True:
         cursor, keys = redis_conn.scan(
@@ -25,14 +24,20 @@ def clean_inactive_searches():
             pipeline.get(key)
         counts = pipeline.execute()
 
-        # 处理符合条件的数据
+        # 处理符合条件的用户
         to_delete = []
         for key, count in zip(keys, counts):
             try:
                 if int(count or 0) < 3:
                     user_id = key.decode().split(":")[1]
-                    to_delete.append(f"search_history:{user_id}")
-                    to_delete.append(key)
+                    history_key = f"search_history:{user_id}"
+
+                    # 检查 zset 是否为空
+                    if redis_conn.exists(history_key):
+                        if redis_conn.zcard(history_key) == 0:
+                            to_delete.append(history_key)
+
+                    to_delete.append(key)  # 删除计数器
             except Exception as e:
                 logger.error(f"Error processing key {key}: {str(e)}")
 
@@ -41,7 +46,7 @@ def clean_inactive_searches():
             redis_conn.delete(*to_delete)
             deleted_count += len(to_delete) // 2
 
-        if cursor == 0:
+        if cursor == '0':
             break
 
     logger.info(f"Deleted {deleted_count} inactive search records")
