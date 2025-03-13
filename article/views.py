@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, AnonymousUser
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import ArticlePost, ArticleColumn, Like
 from .forms import ArticlePostForm
 import markdown
@@ -267,6 +267,9 @@ class IncreaseLikesView(View):
     def post(self, request, *args, **kwargs):
         article = ArticlePost.objects.get(id=kwargs.get('id'))
         user = request.user  # 获取当前用户
+
+        if isinstance(user, AnonymousUser):
+            return HttpResponse('please login', status=401)
 
         # 检查用户是否已经点赞
         if not Like.objects.filter(article=article, user=user).exists():
