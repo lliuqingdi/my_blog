@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Django service
+  web:
+    build: .
+    container_name: my_blog_web
+    command: python manage.py runserver 0.0.0.0:8080
+    volumes:
+      - .:/soft
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=1
+    networks:
+      - my_blog_network
+
+  # Redis service
+  redis:
+    image: redis:alpine
+    container_name: my_blog_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - my_blog_network
+
+networks:
+  my_blog_network:
+    driver: bridge
