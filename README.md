@@ -1,42 +1,83 @@
-# 我的个人博客网站 (My Personal Blog)
+# 我的个人博客网站 V2.0 (My Personal Blog)
 
-使用Django构建的个人博客网站项目。
+基于 **Django** 开发的个人博客网站，支持 AI 助手、搜索历史记录、文章管理等功能。
 
-## 技术选型 (Technologies Used)
-- **Django**: 一个高级的Python Web框架，用于快速开发安全且易于维护的网站。
-- **django-ckeditor-5**: 集成CKEditor 5，提供富文本编辑功能。
-- **django-allauth**: 简化用户认证流程，支持多种认证方式。
-- **djangorestframework**: 用于构建RESTful API，方便前后端分离开发。
-- **Redis**: 一个开源的高性能键值对存储系统，用于缓存和会话存储。
-- **Bootstrap**: 用于构建响应式和移动优先的Web项目。
-- **jQuery**: 简化了HTML文档遍历、事件处理、动画和Ajax交互等常见任务。
+## 📢 本次更新
+- **✨ AI 助手集成**：接入 Ollama 大模型，实现智能对话功能。
+- **🐛 Bug 修复**：优化性能，修复已知问题。
 
-## 功能需求分析 (Functional Requirements Analysis)
+## 🚀 技术选型 (Technologies Used)
+- **Django**：Python Web 框架，快速开发安全且易维护的网站。
+- **django-ckeditor-5**：集成 CKEditor 5，提供富文本编辑功能。
+- **django-allauth**：支持多种用户认证方式，简化登录注册流程。
+- **djangorestframework (DRF)**：用于构建 RESTful API，实现前后端分离。
+- **Redis**：高性能键值存储，用于缓存和会话管理。
+- **Bootstrap**：响应式 UI 框架，适配移动端设备。
+- **jQuery**：简化 AJAX 交互，提高用户体验。
+
+## 📌 功能需求分析 (Functional Requirements Analysis)
 ![功能需求分析图](images/img_1.png)
 
-## 功能流程图 (Functional Flowchart)
+## 🔄 功能流程图 (Functional Flowchart)
 ![功能流程图](images/img_2.png)
 
-## 页面展示 (Page Displays)
-- **首页** ![首页](images/image9.png "Home Page")
-- **搜索历史** ![搜索历史](images/image11.png "Search History")
-- **详情页** ![详情页](images/img_4.png "Detail Page")
-- **个人发布的博客页面** ![个人发布的博客页面](images/image10.png "Personal Blog Posts")
-- **回复通知** ![回复通知](images/img_5.png "Reply Notification")
-- **添加文章** ![添加文章](images/img_7.png "Add Article")
-- **登录页面** ![登录页面](images/img_8.png "Login Page")
+## 🎨 页面展示 (Page Displays)
+- **首页**  
+  ![首页](images/image9.png "Home Page")
+- **AI 助手**  
+  ![AI 助手](images/img_9.png "AI Assistant")
+- **DeepSeek 助手**  
+  ![DeepSeek 助手](images/img_10.png "DeepSeek Assistant")
+- **搜索历史**  
+  ![搜索历史](images/image11.png "Search History")
+- **文章详情页**  
+  ![详情页](images/img_4.png "Detail Page")
+- **个人博客管理**  
+  ![个人发布的博客页面](images/image10.png "Personal Blog Posts")
+- **回复通知**  
+  ![回复通知](images/img_5.png "Reply Notification")
+- **添加文章**  
+  ![添加文章](images/img_7.png "Add Article")
+- **用户登录**  
+  ![登录页面](images/img_8.png "Login Page")
 
-## 环境安装 (Environment Setup)
+## 🛠️ 环境安装 (Environment Setup)
 
-### 第一种方式，Windows上 (Windows)
-1. **Python版本要求**：3.9以上
-2. **构建虚拟环境**：创建并激活虚拟环境
-3. **安装依赖**：`pip install -r requirements.txt`
-
-### 第二种方式，Linux系统（CentOS 7） (Linux - CentOS 7)
-1. **安装Docker**：确保Docker已安装
-2. **项目根目录**：导航到项目根目录
-3. **构建Docker镜像**：`docker build -t my_django_app .`
-4. **运行Docker容器**：
+### ✅ Windows 上安装 (Windows Setup)
+1. **Python 版本要求**：`>= 3.9`
+2. **创建虚拟环境**：
    ```bash
-   docker run -id --name=django_blog -d -v $(pwd):/soft -p 8080:8080 -p 6379:6379 my_django_app:latest
+   python -m venv venv
+   source venv/bin/activate  # macOS/Linux
+   venv\Scripts\activate  # Windows
+   ```
+3. **安装依赖**：
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### ✅ Linux (CentOS 7) 使用 Docker 部署 (Linux - CentOS 7 with Docker)
+1. **安装 Docker** (如果未安装)：
+   ```bash
+   sudo yum install -y docker
+   sudo systemctl start docker
+   ```
+2. **导航到项目根目录**：
+   ```bash
+   cd my_blog
+   ```
+3. **构建 Docker 镜像**：
+   ```bash
+   docker build -t my_django_blog .
+   ```
+4. **运行 Docker 容器**：
+   ```bash
+   docker run -d --name=django_blog -p 8080:8080 -p 6379:6379 my_django_blog:latest
+   ```
+5. **访问博客**：
+   在浏览器中打开 [http://localhost:8080](http://localhost:8080)
+
+---
+
+🎯 **欢迎 Star & Fork！** 💡
+如果你喜欢这个项目，欢迎在 GitHub 上 **Star** ⭐，并提交你的 PR！
