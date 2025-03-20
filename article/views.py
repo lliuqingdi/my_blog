@@ -6,17 +6,64 @@ from .forms import ArticlePostForm
 import markdown
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Count
 from comment.models import Comment
 from comment.forms import CommentForm
 from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView
 from .redis_utils import add_search_history, get_search_history
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from ollama import AsyncClient
+import json
+from asgiref.sync import async_to_sync
+from taggit.models import Tag
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@async_to_sync
+async def handle_ai_request(request):
+    """ 处理列表页面的AI请求 """
+    try:
+        data = json.loads(request.body)
+        prompt = data.get('prompt', '')
+        context = data.get('context', {})
+
+        # 组合上下文提示词
+        full_prompt = f"""
+        你正在技术博客的文章列表页面，当前上下文：
+        - 搜索关键词: {context.get('search', '无')}
+        - 选中标签: {context.get('tag', '无')}
+        - 热门标签: {', '.join(context.get('hot_tags', []))}
+
+        用户问题：{prompt}
+        """
+
+        # 调用AI接口
+        client = AsyncClient()
+        response = ""
+        async for part in await client.chat(
+                model='deepseek-r1',
+                messages=[{'role': 'user', 'content': full_prompt}],
+                stream=True,
+                options={'temperature': 0}
+        ):
+            response += part['message']['content']
+
+        return JsonResponse({'response': response})
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 # 文章列表
 def article_list(request):
+    # 如果是AI请求则交给独立处理器
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return handle_ai_request(request)
+
     # 从 url 中提取查询参数
     search = request.GET.get('search', '')  # 默认为空字符串
     order = request.GET.get('order')
@@ -24,7 +71,7 @@ def article_list(request):
     tag = request.GET.get('tag')
 
     # 初始化查询集
-    article_list = ArticlePost.objects.all()
+    article_list = ArticlePost.objects.all().select_related('author', 'column').prefetch_related('tags')
 
     # 搜索查询集
     if search:
@@ -54,7 +101,10 @@ def article_list(request):
     if order == 'total_views':
         # 按热度排序博文
         article_list = article_list.order_by('-total_views')
-
+    hot_tags = Tag.objects.filter(articlepost__in=article_list) \
+                   .annotate(use_count=Count('articlepost')) \
+                   .order_by('-use_count')[:5] \
+        .values_list('name', flat=True)
     # 每页显示 3 篇文章
     paginator = Paginator(article_list, 3)
     # 获取 url 中的页码
@@ -74,6 +124,7 @@ def article_list(request):
         'column': column,
         'tag': tag,
         'search_history': search_history,  # 传递历史搜索记录
+        'hot_tags': list(hot_tags),  # 新增热门标签上下文
     }
     # render函数：载入模板，并返回context对象
     return render(request, 'article/list.html', context)

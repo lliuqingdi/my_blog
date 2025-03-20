@@ -1,7 +1,7 @@
 from django.urls import path
 # 引入views.py
 from . import views
-
+from . import api
 app_name = 'article'
 
 urlpatterns = [
@@ -27,4 +27,5 @@ urlpatterns = [
     path('detail-view/<int:pk>/', views.ArticleDetailView.as_view(), name='detail_view'),
     # 创建类视图
     path('create-view/', views.ArticleCreateView.as_view(), name='create_view'),
+    path('chat/', api.ChatView.as_view(), name='ai_chat'),
 ]

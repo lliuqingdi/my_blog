@@ -333,4 +333,4 @@ CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 # pick which cache from the CACHES setting.
 CELERY_CACHE_BACKEND = 'default'
 
-
+ASGI_APPLICATION = 'my_blog.asgi.application'
