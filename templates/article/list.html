@@ -24,6 +24,13 @@
                     </a>
                 </li>
 
+                <!-- AI 助手 在 个人博客的左边 -->
+                <li class="breadcrumb-item">
+                    <a href="{% url 'article:ai_chat' %}" class="text-success">
+                        <i class="fas fa-robot"></i> AI 助手
+                    </a>
+                </li>
+
                 <!-- 新增个人博客入口 -->
                 <li class="breadcrumb-item ml-auto">
                     {% if user.is_authenticated %}
@@ -41,6 +48,7 @@
                 </li>
             </ol>
         </nav>
+
 
         <!-- 搜索栏 -->
         <div class="row">
@@ -330,41 +338,41 @@
 
             // 发送请求
             function sendAIRequest() {
-    const input = document.getElementById('ai-input').value;
-    const chatBox = document.getElementById('ai-chat');
+                const input = document.getElementById('ai-input').value;
+                const chatBox = document.getElementById('ai-chat');
 
-    // 清空旧内容
-    chatBox.innerHTML = '<div class="loading-state">\n  <div class="loading-spinner"></div>\n  思考中...\n</div>';
+                // 清空旧内容
+                chatBox.innerHTML = '<div class="loading-state">\n  <div class="loading-spinner"></div>\n  思考中...\n</div>';
 
-    fetch('', {  // 保持当前URL不变
-        method: 'POST',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            prompt: input,
-            context: {
-                search: '{{ search|default:"" }}',
-                tag: '{{ tag|default:"" }}',
-                hot_tags: {{ hot_tags|safe }}
+                fetch('', {  // 保持当前URL不变
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt: input,
+                        context: {
+                            search: '{{ search|default:"" }}',
+                            tag: '{{ tag|default:"" }}',
+                            hot_tags: {{ hot_tags|safe }}
+                        }
+                    })
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
+                        return response.json();
+                    })
+                    .then(data => {
+                        chatBox.innerHTML = data.response
+                            ? `<div class="ai-response">${data.response.replace(/\n/g, '<br>')}</div>`
+                            : `<div class="alert alert-danger">错误：${data.error || '未知错误'}</div>`;
+                    })
+                    .catch(error => {
+                        chatBox.innerHTML = `<div class="alert alert-danger">请求失败：${error.message}</div>`;
+                    });
             }
-        })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
-        return response.json();
-    })
-    .then(data => {
-        chatBox.innerHTML = data.response
-            ? `<div class="ai-response">${data.response.replace(/\n/g, '<br>')}</div>`
-            : `<div class="alert alert-danger">错误：${data.error || '未知错误'}</div>`;
-    })
-    .catch(error => {
-        chatBox.innerHTML = `<div class="alert alert-danger">请求失败：${error.message}</div>`;
-    });
-}
 
             // 为每篇文章添加快速提问按钮
             document.addEventListener('DOMContentLoaded', () => {
