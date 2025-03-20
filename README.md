@@ -66,17 +66,17 @@
    ```bash
    cd my_blog
    ```
-3. **构建 Docker 镜像**：
+3. **利用 compose.yml 构建 Docker 镜像**：
    ```bash
-   docker build -t my_django_blog .
+   docker compose up -d
    ```
-4. **运行 Docker 容器**：
+4. **查看构建好 Docker 容器**：
    ```bash
-   docker run -d --name=django_blog -p 8080:8080 -p 6379:6379 my_django_blog:latest
+   docker ps
    ```
-5. **访问博客**：
-   在浏览器中打开 [http://localhost:8080](http://localhost:8080)
-
+5. **访问博客**：  
+   在本地浏览器中打开 [http://localhost:8080](http://localhost:8080)  
+   在远程的浏览器打开  [http://hostname:8080](http://hostname:8080)
 ---
 
 🎯 **欢迎 Star & Fork！** 💡
