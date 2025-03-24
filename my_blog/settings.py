@@ -107,9 +107,9 @@ DATABASES = {
 }
 
 # Redis 配置
-REDIS_HOST = '192.168.209.101'  # Redis服务器地址
-REDIS_PORT = 6379  # Redis服务器端口
-REDIS_DB = 1  # 使用的 Redis 数据库索引（比如使用数据库 1）
+REDIS_HOST = os.getenv('REDIS_HOST', '192.168.209.101')  # Redis服务器地址
+REDIS_PORT = os.getenv('REDIS_PORT', 6379)  # Redis服务器端口
+REDIS_DB = os.getenv('REDIS_DB', 1)  # 使用的 Redis 数据库索引（比如使用数据库 1）
 
 # Django缓存配置
 CACHES = {
