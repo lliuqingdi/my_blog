@@ -279,52 +279,77 @@
 {% endblock extra_css %}
 
 {% block extra_js %}
-    <script>
-        // 快捷提问：为文章卡片添加快速提问功能
-        function quickAsk(btn, title) {
-            // 设置 AI 输入框内容
-            document.getElementById('ai-input').value = `@文章 请解释：${title}`;
-        }
+<script>
+    // 快捷提问：为文章卡片添加快速提问功能
+    function quickAsk(btn, title) {
+        // 设置 AI 输入框内容
+        document.getElementById('ai-input').value = `@文章 请解释：${title}`;
+    }
 
-        // 标签建议快捷输入
-        function askAboutTags() {
-            const prompt = `当前页面标签：{{ hot_tags|join:", "|default:"暂无" }}。请推荐相关技术话题：`;
-            document.getElementById('ai-input').value = prompt;
-        }
+    // 标签建议快捷输入
+    function askAboutTags() {
+        const prompt = `当前页面标签：{{ hot_tags|join:", "|default:"暂无" }}。请推荐相关技术话题：`;
+        document.getElementById('ai-input').value = prompt;
+    }
 
-        // 发送请求
-        function sendAIRequest() {
-            const input = document.getElementById('ai-input').value;
-            const chatBox = document.getElementById('ai-chat');
-            chatBox.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>思考中...</div>';
-            fetch('', {  // 保持当前URL不变
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    prompt: input,
-                    context: {
-                        search: '{{ search|default:"" }}',
-                        tag: '{{ tag|default:"" }}',
-                        hot_tags: {{ hot_tags|safe }}
-                    }
-                })
+    // 切换“加载更多”功能：展开或折叠回答内容
+    function toggleLoadMore() {
+        const content = document.getElementById('ai-response-content');
+        const btn = document.getElementById('load-more');
+        if (content.style.maxHeight === "none") {
+            // 当前已展开，折叠
+            content.style.maxHeight = "150px";
+            btn.innerText = "加载更多";
+        } else {
+            // 展开完整内容
+            content.style.maxHeight = "none";
+            btn.innerText = "收起";
+        }
+    }
+
+    // 发送请求
+    function sendAIRequest() {
+        const input = document.getElementById('ai-input').value;
+        const chatBox = document.getElementById('ai-chat');
+        // 显示加载状态
+        chatBox.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>思考中...</div>';
+        fetch('', {  // 保持当前URL不变
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                prompt: input,
+                context: {
+                    search: '{{ search|default:"" }}',
+                    tag: '{{ tag|default:"" }}',
+                    hot_tags: {{ hot_tags|safe }}
+                }
             })
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
-                    return response.json();
-                })
-                .then(data => {
-                    chatBox.innerHTML = data.response
-                        ? `<div class="ai-response">${data.response.replace(/\n/g, '<br>')}</div>`
-                        : `<div class="alert alert-danger">错误：${data.error || '未知错误'}</div>`;
-                })
-                .catch(error => {
-                    chatBox.innerHTML = `<div class="alert alert-danger">请求失败：${error.message}</div>`;
-                });
-        }
-    </script>
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            // 如果有响应内容，则将回答包裹在一个容器中，并添加“加载更多”按钮
+            if(data.response) {
+                chatBox.innerHTML = `
+                <div id="ai-response-content" style="max-height: 150px; overflow: hidden;">
+                    ${data.response.replace(/\n/g, '<br>')}
+                </div>
+                <button id="load-more" class="btn btn-link" onclick="toggleLoadMore()">加载更多</button>
+                `;
+            } else {
+                chatBox.innerHTML = `<div class="alert alert-danger">错误：${data.error || '未知错误'}</div>`;
+            }
+        })
+        .catch(error => {
+            chatBox.innerHTML = `<div class="alert alert-danger">请求失败：${error.message}</div>`;
+        });
+    }
+</script>
 {% endblock extra_js %}
+
