@@ -337,7 +337,7 @@
             // 如果有响应内容，则将回答包裹在一个容器中，并添加“加载更多”按钮
             if(data.response) {
                 chatBox.innerHTML = `
-                <div id="ai-response-content" style="max-height: 150px; overflow: hidden;">
+                <div id="ai-response-content" style="max-height: 750px; overflow: hidden;">
                     ${data.response.replace(/\n/g, '<br>')}
                 </div>
                 <button id="load-more" class="btn btn-link" onclick="toggleLoadMore()">加载更多</button>
