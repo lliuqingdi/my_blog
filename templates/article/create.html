@@ -1,78 +1,63 @@
-<!-- extends表明此页面继承自 base.html 文件 -->
-{% extends "base.html" %} {% load static %}
-<!-- 写入 base.html 中定义的 title -->
+{% extends "base.html" %}
+{% load static %}
+
 {% block title %} 写文章 {% endblock title %}
-<!-- 写入 base.html 中定义的 content -->
+
 {% block content %}
-<!-- 写文章表单 -->
-<div class="container">
-    <div class="row">
-        <div class="col-12">
-            <br>
-            <!-- 提交文章的表单 -->
+    <div class="container mt-5">
+        <div class="card shadow-lg p-5" style="max-width: 900px; margin: auto; border-radius: 15px;">
+            <h3 class="text-center mb-4">✍️ 发表新文章</h3>
+
             <form method="post" action="." enctype="multipart/form-data">
-                <!-- Django中需要POST数据的地方都必须有csrf_token -->
                 {% csrf_token %}
 
                 <!-- 文章标题图 -->
-                <div class="form-group">
-                    <label for="avatar">标题图</label>
-                    <input type="file" class="form-control-file" name="avatar" id="avatar">
+                <div class="text-center mb-4">
+                    <label for="avatar" class="font-weight-bold">标题图</label>
+                    <input type="file" class="form-control-file d-block mx-auto mt-2" name="avatar" id="avatar">
                 </div>
 
                 <!-- 文章标题 -->
                 <div class="form-group">
-                    <!-- 标签 -->
-                    <label for="title">文章标题</label>
-                    <!-- 文本框 -->
-                    <input type="text" 
-                           class="form-control" 
-                           id="title" 
-                           name="title"
-                    >
-                </div>
-                
-                <!-- 文章栏目 -->
-                <div class="form-group">
-                    <label for="column">栏目</label>
-                    <select class="form-control col-3" 
-                            id="column" 
-                            name="column"
-                    >
-                            <option value="none">请选择栏目..</option>
-                        {% for column in columns %}
-                            <option value="{{ column.id }}">{{ column }}</option>
-                        {% endfor %}
-                    </select>
+                    <label for="title"><strong>文章标题</strong></label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="请输入文章标题...">
                 </div>
 
-                <!-- 文章标签 -->
-                <div class="form-group">
-                    <!-- 标签 -->
-                    <label for="tags">标签</label>
-                    <!-- 文本框 -->
-                    <input type="text" 
-                           class="form-control col-3" 
-                           id="tags" 
-                           name="tags"
-                    >
+                <!-- 文章栏目 & 标签 -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="column"><strong>栏目</strong></label>
+                        <select class="form-control" id="column" name="column">
+                            <option value="none">请选择栏目..</option>
+                            {% for column in columns %}
+                                <option value="{{ column.id }}">{{ column }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="tags"><strong>标签</strong></label>
+                        <input type="text" class="form-control" id="tags" name="tags"
+                               placeholder="请输入标签 (多个标签用逗号分隔)">
+                    </div>
                 </div>
 
                 <!-- 文章正文 -->
-                <div class="form-group">
-                    <label for="body">文章正文</label>
-                    <!-- 文本区域 -->
-                    <textarea type="text" 
-                              class="form-control" 
-                              id="body" 
-                              name="body" 
-                              rows="12"
-                    ></textarea>
+                <div class="form-group mt-4">
+                    <label for="body"><strong>文章正文</strong></label>
+                    <textarea class="form-control" id="body" name="body" rows="10"
+                              placeholder="开始写作吧..."></textarea>
                 </div>
+
                 <!-- 提交按钮 -->
-                <button type="submit" class="btn btn-primary">完成</button>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary px-5 py-2"
+                            style="border-radius: 25px; transition: 0.3s;"
+                            onmouseover="this.style.backgroundColor='#0056b3';"
+                            onmouseout="this.style.backgroundColor='#007bff';">
+                        🚀 发布文章
+                    </button>
+                </div>
             </form>
         </div>
     </div>
-</div>
 {% endblock content %}
