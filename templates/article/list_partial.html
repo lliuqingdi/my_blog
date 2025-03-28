@@ -1,0 +1,100 @@
+{% load static %}
+{% load my_filters_and_tags %}
+{% load custom_filters %}
+
+{% for article in articles %}
+<div class="col-12 position-relative mb-4">
+    <!-- 编辑按钮（仅限作者本人或本人博客） -->
+    {% if user == article.author or is_my_articles %}
+    <div class="position-absolute" style="right: 15px; top: 15px; z-index: 1;">
+        <a href="{% url 'article:article_update' article.id %}"
+           class="btn btn-sm btn-outline-primary"
+           data-toggle="tooltip"
+           title="编辑文章">
+            <i class="fas fa-edit"></i>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- 文章卡片 -->
+    <div class="card shadow-sm">
+        <div class="row no-gutters">
+            {% if article.avatar %}
+            <div class="col-md-3">
+                <img src="{{ article.avatar.url }}"
+                     class="card-img"
+                     alt="avatar"
+                     style="height: 200px; object-fit: cover;">
+            </div>
+            {% endif %}
+
+            <div class="col-md-{% if article.avatar %}9{% else %}12{% endif %}">
+                <div class="card-body">
+                    <!-- 栏目和标签 -->
+                    <div class="mb-2">
+                        {% if article.column %}
+                        <a href="{% url 'article:article_list' %}?column={{ article.column.id }}"
+                           class="badge
+                           {% if article.column.title == 'Django' %}badge-success
+                           {% elif article.column.title == 'Java' %}badge-danger
+                           {% elif article.column.title == 'HTML' %}badge-warning
+                           {% else %}badge-primary{% endif %}">
+                            {{ article.column }}
+                        </a>
+                        {% endif %}
+                        {% for tag in article.tags.all %}
+                        <a href="{% url 'article:article_list' %}?tag={{ tag }}"
+                           class="badge badge-secondary">
+                            {{ tag }}
+                        </a>
+                        {% endfor %}
+                    </div>
+
+                    <!-- 标题 -->
+                    <h4 class="card-title">
+                        <a href="{% url 'article:article_detail' article.id %}"
+                           class="text-dark font-weight-bold">
+                            {{ article.title }}
+                        </a>
+                    </h4>
+
+                    <!-- 摘要 -->
+                    <p class="card-text text-muted">
+                        {{ article.body|striptags|truncatechars:150 }}
+                    </p>
+
+                    <!-- 元信息区域 -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            <span class="mr-3">
+                                <i class="fas fa-eye text-info"></i> {{ article.total_views }}
+                            </span>
+                            <span class="mr-3">
+                                <i class="fas fa-comments text-success"></i> {{ article.comments.count }}
+                            </span>
+                            <span>
+                                <i class="fas fa-clock text-pink"></i> {{ article.created|timesince_zh }}
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <small class="text-muted mr-2">
+                                作者：
+                                <a href="{% url 'userprofile:user_profile' article.author.username %}"
+                                   class="author-link"
+                                   data-toggle="tooltip"
+                                   title="查看作者主页">
+                                    {{ article.author.username }}
+                                </a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="col-12">
+    <div class="alert alert-info">暂无文章</div>
+</div>
+{% endfor %}

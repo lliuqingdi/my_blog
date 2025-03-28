@@ -1,34 +1,25 @@
 {% extends "base.html" %}
 {% load static %}
 {% load my_filters_and_tags %}
-
-{% block title %}
-    首页
-{% endblock title %}
+{% load custom_filters %}
+{% block title %}首页{% endblock title %}
 
 {% block content %}
     <div class="container">
         <!-- 面包屑导航 -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <!-- 最新/最热导航 -->
                 <li class="breadcrumb-item">
-                    <a href="{% url 'article:article_list' %}?search=&column={{ column }}&tag={{ tag }}">
-                        最新
-                    </a>
+                    <a href="{% url 'article:article_list' %}?search=&column={{ column }}&tag={{ tag }}">最新</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="{% url 'article:article_list' %}?order=total_views&search=&column={{ column }}&tag={{ tag }}">
-                        最热
-                    </a>
+                    <a href="{% url 'article:article_list' %}?order=total_views&search=&column={{ column }}&tag={{ tag }}">最热</a>
                 </li>
-                <!-- AI 助手入口 -->
                 <li class="breadcrumb-item">
                     <a href="{% url 'article:ai_chat' %}" class="text-success">
                         <i class="fas fa-robot"></i> AI 助手
                     </a>
                 </li>
-                <!-- 个人博客入口 -->
                 <li class="breadcrumb-item ml-auto">
                     {% if user.is_authenticated %}
                         <a href="{% url 'article:my_articles' %}" class="text-primary">
@@ -54,15 +45,8 @@
                 <div class="row">
                     <div class="col-auto mr-auto">
                         <form class="form-inline" method="get" action="{% url 'article:article_list' %}">
-                            <label class="sr-only">content</label>
-                            <input type="text"
-                                   class="form-control mb-2 mr-sm-2"
-                                   name="search"
-                                   placeholder="搜索文章..."
-                                   value="{% if search %}{{ search }}{% endif %}"
-                                   required
-                                   list="search-history">
-                            <!-- 历史搜索记录 -->
+                            <input type="text" name="search" class="form-control mb-2 mr-sm-2"
+                                   placeholder="搜索文章..." value="{{ search }}" required list="search-history">
                             <datalist id="search-history">
                                 {% for keyword in search_history %}
                                     <option value="{{ keyword.decode }}">{{ keyword.decode }}</option>
@@ -78,7 +62,7 @@
                     {% if is_my_articles %}
                         <i class="fas fa-file-alt"></i> 我的文章列表
                     {% elif search %}
-                        <span style="color: red">"{{ search }}"</span>的搜索结果
+                        <span style="color: red">"{{ search }}"</span> 的搜索结果
                     {% else %}
                         <i class="fas fa-list-ul"></i> 所有文章列表
                     {% endif %}
@@ -88,13 +72,12 @@
                 <div class="row mt-2">
                     {% for article in articles %}
                         <div class="col-12 position-relative mb-4">
-                            <!-- 编辑按钮 -->
+                            <!-- 编辑按钮（仅限作者本人或本人博客） -->
                             {% if user == article.author or is_my_articles %}
                                 <div class="position-absolute" style="right: 15px; top: 15px; z-index: 1;">
                                     <a href="{% url 'article:article_update' article.id %}"
                                        class="btn btn-sm btn-outline-primary"
-                                       data-toggle="tooltip"
-                                       title="编辑文章">
+                                       data-toggle="tooltip" title="编辑文章">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                 </div>
@@ -104,10 +87,8 @@
                                 <div class="row no-gutters">
                                     {% if article.avatar %}
                                         <div class="col-md-3">
-                                            <img src="{{ article.avatar.url }}"
-                                                 class="card-img"
-                                                 alt="avatar"
-                                                 style="height: 200px; object-fit: cover;">
+                                            <img src="{{ article.avatar.url }}" class="card-img" alt="avatar"
+                                                 style="height:200px; object-fit:cover;">
                                         </div>
                                     {% endif %}
                                     <div class="col-md-{% if article.avatar %}9{% else %}12{% endif %}">
@@ -117,51 +98,65 @@
                                                 {% if article.column %}
                                                     <a href="{% url 'article:article_list' %}?column={{ article.column.id }}"
                                                        class="badge
-                           {% if article.column.title == 'Django' %}badge-success
-                           {% elif article.column.title == 'Java' %}badge-danger
-                           {% elif article.column.title == 'HTML' %}badge-warning
-                           {% else %}badge-primary{% endif %}">
+                                                   {% if article.column.title == 'Django' %}badge-success
+                                                   {% elif article.column.title == 'Java' %}badge-danger
+                                                   {% elif article.column.title == 'HTML' %}badge-warning
+                                                   {% else %}badge-primary{% endif %}">
                                                         {{ article.column }}
                                                     </a>
                                                 {% endif %}
                                                 {% for tag in article.tags.all %}
                                                     <a href="{% url 'article:article_list' %}?tag={{ tag }}"
-                                                       class="badge badge-secondary">
-                                                        {{ tag }}
-                                                    </a>
+                                                       class="badge badge-secondary">{{ tag }}</a>
                                                 {% endfor %}
                                             </div>
                                             <!-- 标题 -->
                                             <h4 class="card-title">
                                                 <a href="{% url 'article:article_detail' article.id %}"
-                                                   class="text-dark font-weight-bold">
-                                                    {{ article.title }}
-                                                </a>
+                                                   class="text-dark font-weight-bold">{{ article.title }}</a>
                                             </h4>
                                             <!-- 摘要 -->
                                             <p class="card-text text-muted">
                                                 {{ article.body|striptags|truncatechars:150 }}
                                             </p>
-                                            <!-- 元信息区域：作者信息与快捷提问并排显示 -->
+                                            <!-- 元信息区域：作者信息、关注按钮和快捷提问 -->
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="text-muted small">
-                        <span class="mr-3">
-                          <i class="fas fa-eye text-info"></i>
-                          {{ article.total_views }}
-                        </span>
+                                                <span class="mr-3">
+                                                    <i class="fas fa-eye text-info"></i> {{ article.total_views }}
+                                                </span>
                                                     <span class="mr-3">
-                          <i class="fas fa-comments text-success"></i>
-                          {{ article.comments.count }}
-                        </span>
+                                                    <i class="fas fa-comments text-success"></i> {{ article.comments.count }}
+                                                </span>
                                                     <span>
-                          <i class="fas fa-clock text-pink"></i>
-                          {{ article.created|timesince_zh }}
-                        </span>
+                                                    <i class="fas fa-clock text-pink"></i> {{ article.created|timesince_zh }}
+                                                </span>
                                                 </div>
                                                 <div class="d-flex align-items-center">
+                                                    <!-- 作者姓名链接到个人简介 -->
                                                     <small class="text-muted mr-2">
-                                                        作者：{{ article.author.username }}
+                                                        作者：
+                                                        <a href="{% url 'userprofile:user_profile' article.author.username %}"
+                                                           class="author-link"
+                                                           data-toggle="tooltip"
+                                                           title="查看作者主页">
+                                                            {{ article.author.username }}
+                                                        </a>
                                                     </small>
+                                                    <!-- 关注/取消关注按钮（仅当已登录且非本人） -->
+                                                    {% if user.is_authenticated and user != article.author %}
+                                                        <button id="follow-btn-{{ article.author.id }}"
+                                                                data-user-id="{{ article.author.id }}"
+                                                                class="btn btn-sm {% if user.profile|is_following:article.author.profile %}btn-secondary{% else %}btn-outline-primary{% endif %}"
+                                                                onclick="toggleFollow({{ article.author.id }}, this);">
+                                                            {% if user.profile|is_following:article.author.profile %}
+                                                                已关注
+                                                            {% else %}
+                                                                关注
+                                                            {% endif %}
+                                                        </button>
+                                                    {% endif %}
+                                                    <!-- 快捷提问按钮 -->
                                                     <button class="btn btn-sm btn-light quick-ask"
                                                             onclick="quickAsk(this, '{{ article.title }}')">
                                                         <i class="fas fa-question-circle"></i> 快捷提问
@@ -179,33 +174,23 @@
                 <!-- 分页导航 -->
                 <div class="pagination row mt-4">
                     <div class="m-auto">
-          <span class="step-links">
-            {% if articles.has_previous %}
-                <a href="?page=1&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
-                   class="btn btn-sm btn-success">
-                &laquo; 1
-              </a>
-                <span class="mx-2">...</span>
-                <a href="?page={{ articles.previous_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
-                   class="btn btn-sm btn-secondary">
-                {{ articles.previous_page_number }}
-              </a>
-            {% endif %}
-              <span class="current btn btn-sm btn-danger mx-2">
-              {{ articles.number }}
-            </span>
-              {% if articles.has_next %}
-                  <a href="?page={{ articles.next_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
-                     class="btn btn-sm btn-secondary">
-                {{ articles.next_page_number }}
-              </a>
-                  <span class="mx-2">...</span>
-                  <a href="?page={{ articles.paginator.num_pages }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
-                     class="btn btn-sm btn-success">
-                {{ articles.paginator.num_pages }} &raquo;
-              </a>
-              {% endif %}
-          </span>
+                    <span class="step-links">
+                        {% if articles.has_previous %}
+                            <a href="?page=1&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
+                               class="btn btn-sm btn-success">&laquo; 1</a>
+                            <span class="mx-2">...</span>
+                            <a href="?page={{ articles.previous_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
+                               class="btn btn-sm btn-secondary">{{ articles.previous_page_number }}</a>
+                        {% endif %}
+                        <span class="current btn btn-sm btn-danger mx-2">{{ articles.number }}</span>
+                        {% if articles.has_next %}
+                            <a href="?page={{ articles.next_page_number }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
+                               class="btn btn-sm btn-secondary">{{ articles.next_page_number }}</a>
+                            <span class="mx-2">...</span>
+                            <a href="?page={{ articles.paginator.num_pages }}&order={{ order }}&search={{ search }}&column={{ column }}&tag={{ tag }}"
+                               class="btn btn-sm btn-success">{{ articles.paginator.num_pages }} &raquo;</a>
+                        {% endif %}
+                    </span>
                     </div>
                 </div>
             </div>
@@ -215,12 +200,10 @@
                 <div id="ai-sidebar" class="card">
                     <div class="card-body">
                         <h5 class="mb-3"><i class="fas fa-robot text-primary"></i> 文章智能助手</h5>
-                        <!-- 上下文感知建议 -->
                         <div class="context-aware" onclick="askAboutTags()">
                             <small class="text-muted">当前页面分析：</small>
                             <div>📌 热门标签：{{ hot_tags|join:", "|default:"暂无" }}</div>
                         </div>
-                        <!-- 聊天界面 -->
                         <div id="ai-chat" class="mt-3"></div>
                         <div class="input-group">
                             <input type="text" id="ai-input" class="form-control"
@@ -279,77 +262,98 @@
 {% endblock extra_css %}
 
 {% block extra_js %}
-<script>
-    // 快捷提问：为文章卡片添加快速提问功能
-    function quickAsk(btn, title) {
-        // 设置 AI 输入框内容
-        document.getElementById('ai-input').value = `@文章 请解释：${title}`;
-    }
-
-    // 标签建议快捷输入
-    function askAboutTags() {
-        const prompt = `当前页面标签：{{ hot_tags|join:", "|default:"暂无" }}。请推荐相关技术话题：`;
-        document.getElementById('ai-input').value = prompt;
-    }
-
-    // 切换“加载更多”功能：展开或折叠回答内容
-    function toggleLoadMore() {
-        const content = document.getElementById('ai-response-content');
-        const btn = document.getElementById('load-more');
-        if (content.style.maxHeight === "none") {
-            // 当前已展开，折叠
-            content.style.maxHeight = "150px";
-            btn.innerText = "加载更多";
-        } else {
-            // 展开完整内容
-            content.style.maxHeight = "none";
-            btn.innerText = "收起";
+    <!-- 引入 jQuery（如果没有全局引入） -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // 快捷提问：将文章标题填入 AI 输入框
+        function quickAsk(btn, title) {
+            document.getElementById('ai-input').value = `@文章 请解释：${title}`;
         }
-    }
 
-    // 发送请求
-    function sendAIRequest() {
-        const input = document.getElementById('ai-input').value;
-        const chatBox = document.getElementById('ai-chat');
-        // 显示加载状态
-        chatBox.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>思考中...</div>';
-        fetch('', {  // 保持当前URL不变
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                prompt: input,
-                context: {
-                    search: '{{ search|default:"" }}',
-                    tag: '{{ tag|default:"" }}',
-                    hot_tags: {{ hot_tags|safe }}
-                }
-            })
-        })
-        .then(response => {
-            if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
-            return response.json();
-        })
-        .then(data => {
-            // 如果有响应内容，则将回答包裹在一个容器中，并添加“加载更多”按钮
-            if(data.response) {
-                chatBox.innerHTML = `
-                <div id="ai-response-content" style="max-height: 750px; overflow: hidden;">
-                    ${data.response.replace(/\n/g, '<br>')}
-                </div>
-                <button id="load-more" class="btn btn-link" onclick="toggleLoadMore()">加载更多</button>
-                `;
+        // 标签建议快捷输入
+        function askAboutTags() {
+            const prompt = `当前页面标签：{{ hot_tags|join:", "|default:"暂无" }}。请推荐相关技术话题：`;
+            document.getElementById('ai-input').value = prompt;
+        }
+
+        // 切换“加载更多”功能（针对 AI 助手返回的长回答）
+        function toggleLoadMore() {
+            const content = document.getElementById('ai-response-content');
+            const btn = document.getElementById('load-more');
+            if (content.style.maxHeight === "none") {
+                content.style.maxHeight = "150px";
+                btn.innerText = "加载更多";
             } else {
-                chatBox.innerHTML = `<div class="alert alert-danger">错误：${data.error || '未知错误'}</div>`;
+                content.style.maxHeight = "none";
+                btn.innerText = "收起";
             }
-        })
-        .catch(error => {
-            chatBox.innerHTML = `<div class="alert alert-danger">请求失败：${error.message}</div>`;
-        });
-    }
-</script>
-{% endblock extra_js %}
+        }
 
+        // 发送 AI 请求
+        function sendAIRequest() {
+            const input = document.getElementById('ai-input').value;
+            const chatBox = document.getElementById('ai-chat');
+            chatBox.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div>思考中...</div>';
+            fetch('', {  // 保持当前 URL 不变
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: input,
+                    context: {
+                        search: '{{ search|default:"" }}',
+                        tag: '{{ tag|default:"" }}',
+                        hot_tags: {{ hot_tags|safe }}
+                    }
+                })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.response) {
+                        chatBox.innerHTML = `
+                    <div id="ai-response-content" style="max-height: 750px; overflow: hidden;">
+                        ${data.response.replace(/\n/g, '<br>')}
+                    </div>
+                    <button id="load-more" class="btn btn-link" onclick="toggleLoadMore()">加载更多</button>
+                `;
+                    } else {
+                        chatBox.innerHTML = `<div class="alert alert-danger">错误：${data.error || '未知错误'}</div>`;
+                    }
+                })
+                .catch(error => {
+                    chatBox.innerHTML = `<div class="alert alert-danger">请求失败：${error.message}</div>`;
+                });
+        }
+
+        // AJAX 关注/取消关注操作
+        function toggleFollow(userId, btn) {
+            $.ajax({
+                url: "{% url 'userprofile:toggle_follow' 0 %}".replace('0', userId),
+                type: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                success: function (response) {
+                    if (response.status === "followed") {
+                        btn.innerText = "已关注";
+                        $(btn).removeClass("btn-outline-primary").addClass("btn-secondary");
+                    } else if (response.status === "unfollowed") {
+                        btn.innerText = "关注";
+                        $(btn).removeClass("btn-secondary").addClass("btn-outline-primary");
+                    }
+                    // 可以添加粉丝数更新逻辑
+                },
+                error: function (xhr) {
+                    const msg = xhr.responseJSON?.message || "操作失败！";
+                    alert(msg);
+                }
+            });
+        }
+    </script>
+{% endblock extra_js %}

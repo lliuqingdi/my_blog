@@ -14,4 +14,7 @@ urlpatterns = [
     path('delete/<int:id>/', views.user_delete, name='delete'),
     # 用户信息
     path('edit/<int:id>/', views.profile_edit, name='edit'),
+    # 用户关注
+    path('toggle-follow/<int:user_id>/', views.toggle_follow, name='toggle_follow'),
+    path('user/<str:username>/', views.user_profile, name='user_profile'),
 ]

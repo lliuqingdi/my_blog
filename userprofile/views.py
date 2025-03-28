@@ -1,17 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
-
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-
 from .forms import UserLoginForm, UserRegisterForm
-
 from .forms import ProfileForm
 from .models import Profile
+from django.contrib import messages
+from article.models import ArticlePost
+from django.db.models import Q
 
-
-# Create your views here.
 
 # 用户登录
 def user_login(request):
@@ -130,3 +128,65 @@ def profile_edit(request, id):
         return render(request, 'userprofile/edit.html', context)
     else:
         return HttpResponse("请使用GET或POST请求数据")
+
+
+@login_required
+def toggle_follow(request, user_id):
+    """切换关注状态"""
+    target_profile = get_object_or_404(Profile, user_id=user_id)
+    current_profile = request.user.profile
+
+    if target_profile == current_profile:
+        return JsonResponse({'status': 'error', 'message': '不能关注自己！'}, status=400)
+
+    is_following = current_profile.following.filter(id=target_profile.id).exists()
+
+    if is_following:
+        current_profile.following.remove(target_profile)
+        status = 'unfollowed'
+    else:
+        current_profile.following.add(target_profile)
+        status = 'followed'
+
+    return JsonResponse({
+        'status': status,
+        'message': f'已{"取消" if is_following else ""}关注 {target_profile.user.username}',
+        'new_state': '已关注' if not is_following else '关注'
+    })
+
+
+def user_profile(request, username):
+    # 获取用户对象
+    profile_user = get_object_or_404(User, username=username)
+
+    # 获取用户文章（带过滤功能）
+    articles = ArticlePost.objects.filter(author=profile_user)
+
+    # 处理搜索参数
+    search = request.GET.get('search', '')
+    if search:
+        articles = articles.filter(
+            Q(title__icontains=search) |
+            Q(body__icontains=search)
+        )
+
+    # 处理排序
+    order = request.GET.get('order')
+    if order == 'total_views':
+        articles = articles.order_by('-total_views')
+    else:
+        articles = articles.order_by('-created')
+
+    # 关注状态
+    is_following = False
+    if request.user.is_authenticated:
+        is_following = request.user.profile.following.filter(id=profile_user.profile.id).exists()
+
+    context = {
+        'profile_user': profile_user,
+        'articles': articles,
+        'is_following': is_following,
+        'search': search,
+        'order': order
+    }
+    return render(request, 'userprofile/profile.html', context)

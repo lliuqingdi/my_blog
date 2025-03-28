@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- 左侧个人信息 -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <!-- 头像 -->
+                    {% if profile_user.profile.avatar %}
+                        <img src="{{ profile_user.profile.avatar.url }}"
+                             class="rounded-circle mb-3"
+                             alt="头像"
+                             style="width: 120px; height: 120px; object-fit: cover;">
+                    {% endif %}
+
+                    <!-- 用户名 -->
+                    <h4>{{ profile_user.username }}</h4>
+
+                    <!-- 关注信息 -->
+                    <div class="d-flex justify-content-around my-3">
+                        <div>
+                            <div class="font-weight-bold">{{ profile_user.profile.followers.count }}</div>
+                            <small class="text-muted">粉丝</small>
+                        </div>
+                        <div>
+                            <div class="font-weight-bold">{{ profile_user.following.count }}</div>
+                            <small class="text-muted">关注</small>
+                        </div>
+                    </div>
+
+                    <!-- 关注按钮 -->
+                    {% if user.is_authenticated and user != profile_user %}
+                        <button class="btn btn-block {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}"
+                                onclick="toggleFollow({{ profile_user.id }}, this)">
+                            {% if is_following %}已关注{% else %}关注{% endif %}
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 个人简介 -->
+            {% if profile_user.profile.bio %}
+                <div class="card mt-3 shadow-sm">
+                    <div class="card-body">
+                        <h6><i class="fas fa-info-circle"></i> 个人简介</h6>
+                        <p class="text-muted">{{ profile_user.profile.bio }}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 右侧文章列表 -->
+        <div class="col-md-9">
+            <h4 class="mb-4"><i class="fas fa-file-alt"></i> 发表的文章</h4>
+            {% include 'article/list_partial.html' with articles=articles %}
+        </div>
+    </div>
+</div>
+
+<!-- 添加toggleFollow函数 -->
+<script>
+    function toggleFollow(userId, btn) {
+        $.ajax({
+            url: "{% url 'userprofile:toggle_follow' 0 %}".replace('0', userId),
+            type: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            success: function (response) {
+                if (response.status === "followed") {
+                    btn.innerText = "已关注";
+                    $(btn).removeClass("btn-primary").addClass("btn-secondary");
+                } else if (response.status === "unfollowed") {
+                    btn.innerText = "关注";
+                    $(btn).removeClass("btn-secondary").addClass("btn-primary");
+                }
+            },
+            error: function (xhr) {
+                const msg = xhr.responseJSON?.message || "操作失败！";
+                alert(msg);
+            }
+        });
+    }
+</script>
+{% endblock %}
