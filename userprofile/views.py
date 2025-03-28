@@ -54,7 +54,7 @@ def user_register(request):
             return redirect("article:article_list")
         else:
             # 使用默认的表单的check函数不仅会检查密码是否相同，还会检查密码复杂程度，以及是否与其他信息相关等等
-            print(user_register_form.errors)
+            # print(user_register_form.errors)
             return HttpResponse("注册表单输入有误。请再次检查输入密码是否符合标准，并重新输入~")
     elif request.method == 'GET':
         user_register_form = UserRegisterForm()
@@ -159,34 +159,37 @@ def user_profile(request, username):
     # 获取用户对象
     profile_user = get_object_or_404(User, username=username)
 
-    # 获取用户文章（带过滤功能）
+    # 获取用户的文章
     articles = ArticlePost.objects.filter(author=profile_user)
 
-    # 处理搜索参数
+    # 搜索和排序
     search = request.GET.get('search', '')
     if search:
-        articles = articles.filter(
-            Q(title__icontains=search) |
-            Q(body__icontains=search)
-        )
+        articles = articles.filter(Q(title__icontains=search) | Q(body__icontains=search))
 
-    # 处理排序
-    order = request.GET.get('order')
+    order = request.GET.get('order', 'created')
     if order == 'total_views':
         articles = articles.order_by('-total_views')
     else:
         articles = articles.order_by('-created')
 
-    # 关注状态
+    # 获取粉丝和关注数量
+    followers_count = profile_user.profile.followers.count()
+    following_count = profile_user.profile.following.count()
+
+    # 判断当前用户是否已关注
     is_following = False
-    if request.user.is_authenticated:
-        is_following = request.user.profile.following.filter(id=profile_user.profile.id).exists()
+    if request.user.is_authenticated and request.user != profile_user:
+        # 判断当前登录用户是否已关注该用户
+        is_following = profile_user.profile.followers.filter(id=request.user.profile.id).exists()
 
     context = {
         'profile_user': profile_user,
         'articles': articles,
         'is_following': is_following,
         'search': search,
-        'order': order
+        'order': order,
+        'followers_count': followers_count,
+        'following_count': following_count,
     }
     return render(request, 'userprofile/profile.html', context)
