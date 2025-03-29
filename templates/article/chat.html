@@ -29,6 +29,7 @@
             border-radius: 1.5rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+            position: relative; /* 为返回按钮提供位置 */
         }
 
         .chat-header {
@@ -124,6 +125,25 @@
             display: none;
         }
 
+        /* 新增返回按钮样式 */
+        .return-link {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .return-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+
         @media (max-width: 640px) {
             body {
                 padding: 1rem;
@@ -135,6 +155,12 @@
 
             button[type="submit"] {
                 width: 100%;
+            }
+
+            .return-link {
+                top: 1rem;
+                left: 50%;
+                transform: translateX(-50%);
             }
         }
     </style>
@@ -149,10 +175,12 @@
     <div class="chat-box">
         <form id="chatForm">
             {% csrf_token %}
-            <input type="text" id="prompt" name="prompt"
-                   placeholder="请输入您的问题...">
+            <input type="text" id="prompt" name="prompt" placeholder="请输入您的问题...">
             <button type="submit">立即咨询</button>
         </form>
+
+        <!-- 返回文章列表按钮 -->
+        <a href="{% url 'article:article_list' %}" class="return-link">返回文章列表</a>
 
         <h3 style="margin-bottom: 1rem; color: var(--primary-color);">AI生成结果：</h3>
         <div id="ai-response">
